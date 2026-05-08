@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kill Team Map Builder</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23c8331f'/%3E%3Ctext x='8' y='12' text-anchor='middle' font-family='Arial' font-size='11' font-weight='bold' fill='white'%3EKT%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Kill Team Map Builder</h1>
+    <div class="topbar-actions">
+      <button id="new-map" class="btn btn-secondary" type="button">New map</button>
+      <button id="download-png" class="btn btn-secondary" type="button" title="Save the board as an image">Download PNG</button>
+      <button id="share-view" class="btn btn-secondary" type="button" title="Copy a view-only link">Share view link</button>
+      <button id="share-edit" class="btn btn-primary" type="button" title="Copy a link with full edit access">Share edit link</button>
+      <button id="fork-button" class="btn btn-primary" type="button">Fork to edit</button>
+    </div>
+  </header>
+
+  <section class="controls">
+    <label>
+      Mission
+      <select id="mission-select"></select>
+    </label>
+    <label>
+      Terrain set
+      <select id="terrain-select"></select>
+    </label>
+    <label class="snap-toggle">
+      <input type="checkbox" id="snap-toggle">
+      Snap to grid
+    </label>
+  </section>
+
+  <section class="palette-row">
+    <div id="palette" class="palette"></div>
+  </section>
+
+  <main class="board-stage">
+    <div class="board-wrapper">
+      <div id="board" class="board"></div>
+    </div>
+  </main>
+
+  <section class="toolbar">
+    <button id="delete-piece" class="tbtn" type="button" title="Delete (Del)">&#x2715;</button>
+    <button id="rotate-left" class="tbtn" type="button" title="Rotate left (Shift+&larr;)">&#x21B6;</button>
+    <button id="move-up"     class="tbtn" type="button" title="Move up (&uarr;)">&uarr;</button>
+    <button id="rotate-right" class="tbtn" type="button" title="Rotate right (Shift+&rarr;)">&#x21B7;</button>
+    <button id="move-left"   class="tbtn" type="button" title="Move left (&larr;)">&larr;</button>
+    <button id="move-down"   class="tbtn" type="button" title="Move down (&darr;)">&darr;</button>
+    <button id="move-right"  class="tbtn" type="button" title="Move right (&rarr;)">&rarr;</button>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <footer class="hint">
+    <kbd>click</kbd> a placed piece to select it &middot;
+    <kbd>arrows</kbd> nudge &middot;
+    <kbd>Shift</kbd>+<kbd>arrows</kbd> rotate &middot;
+    <kbd>Del</kbd> remove &middot;
+    <kbd>Ctrl/Cmd</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> undo/redo
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
