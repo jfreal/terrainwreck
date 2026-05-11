@@ -1,7 +1,7 @@
 // Entry point. Decides between view mode and edit mode, wires up the
 // mission/terrain selectors and the share/fork buttons.
 
-import { MISSIONS, TERRAIN_SETS, BOARD_WIDTH } from "./catalog.js";
+import { MISSIONS, TERRAIN_SETS, BOARD_WIDTH, BOARD_HEIGHT } from "./catalog.js";
 import { readStateFromUrl, isViewMode, viewLink, editLink, copyToClipboard, writeStateToUrl } from "./share.js";
 import { initEditor, setMission, setTerrainSet } from "./editor.js";
 import { renderViewer } from "./viewer.js";
@@ -16,6 +16,7 @@ function bootstrap() {
     renderViewer(state);
     setupForkButton(state);
     setupDownloadButton(() => state);
+    setupResponsiveBoard();
     return;
   }
 
@@ -35,6 +36,7 @@ function bootstrap() {
   setupShareButtons(editor);
   setupNewMapButton();
   setupDownloadButton(() => editor.getState());
+  setupResponsiveBoard();
 }
 
 function populateSelectors(state) {
@@ -161,6 +163,35 @@ function setupForkButton(state) {
     // Drop the ?view flag, keep the same hash → reload as editor.
     window.location.search = "";
   });
+}
+
+// Size the board wrapper to fit the available stage rectangle while
+// preserving the 1524:1125 aspect ratio. CSS aspect-ratio + max-width/height
+// is unreliable inside a flex item whose own height comes from flexing —
+// browsers don't consistently shrink both dimensions. Compute explicitly.
+function setupResponsiveBoard() {
+  const stage = document.querySelector(".board-stage");
+  const wrapper = document.querySelector(".board-wrapper");
+  if (!stage || !wrapper) return;
+  const ar = BOARD_WIDTH / BOARD_HEIGHT;
+  const fit = () => {
+    const cs = getComputedStyle(stage);
+    const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+    const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const availW = stage.clientWidth - padX;
+    const availH = stage.clientHeight - padY;
+    if (availW <= 0 || availH <= 0) return;
+    let w, h;
+    if (availW / availH > ar) { h = availH; w = h * ar; }
+    else                      { w = availW; h = w / ar; }
+    wrapper.style.width  = `${w}px`;
+    wrapper.style.height = `${h}px`;
+  };
+  fit();
+  window.addEventListener("resize", fit);
+  // Catches palette-row height changes (terrain set switch) and other
+  // surrounding-layout shifts that change the stage's flex-distributed height.
+  new ResizeObserver(fit).observe(stage);
 }
 
 document.addEventListener("DOMContentLoaded", bootstrap);

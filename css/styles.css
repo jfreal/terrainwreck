@@ -129,13 +129,12 @@ body.view-mode .hint { display: none; }
   min-height: 0;
 }
 .board-wrapper {
-  /* The board is 1524x1125 — preserve that aspect ratio while fitting
-     both the available width and height of the stage. */
+  /* JS sizes this to fit the stage rectangle (see setupResponsiveBoard
+     in main.js). aspect-ratio is a fallback for the first paint before
+     JS runs. */
   aspect-ratio: 1524 / 1125;
   max-width: 100%;
   max-height: 100%;
-  width: auto;
-  height: 100%;
   position: relative;
 }
 .board {
