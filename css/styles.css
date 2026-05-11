@@ -3,9 +3,11 @@
 html, body { margin: 0; padding: 0; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: #f5f6f8;
+  background: #e8e4dc;
   color: #1a1a1a;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Topbar */
@@ -17,6 +19,7 @@ body {
   background: #1a2332;
   color: #fff;
   border-bottom: 3px solid #c8331f;
+  flex-shrink: 0;
 }
 .topbar h1 {
   font-size: 1.15rem;
@@ -62,6 +65,7 @@ body.view-mode .hint { display: none; }
   background: #fff;
   border-bottom: 1px solid #e0e2e6;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 .controls label {
   display: flex;
@@ -90,6 +94,7 @@ body.view-mode .hint { display: none; }
   border-bottom: 1px solid #e0e2e6;
   padding: 0.75rem;
   overflow-x: auto;
+  flex-shrink: 0;
 }
 .palette {
   display: flex;
@@ -108,21 +113,44 @@ body.view-mode .hint { display: none; }
   transition: border-color 0.1s;
   user-select: none;
   -webkit-user-drag: none;
+  touch-action: none;
 }
 .palette-piece:hover { border-color: #c8331f; }
 .palette-piece.drag-ghost { z-index: 1000; }
 
-/* Board stage */
+/* Mission title block — styled after the orange "MISSION MAP N" header
+   on the official mission cards. Sits directly above the board. */
+.mission-title {
+  text-align: left;
+  padding: 0.5rem 1rem 0.25rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d35a26;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.mission-title .mission-title-sep { color: #b6b1a4; margin: 0 0.4rem; font-weight: 400; }
+.mission-title .mission-title-name { color: #1a1a1a; }
+
+/* Board stage — grows to fill the remaining viewport height,
+   so the wrapper can fit both width and height while preserving aspect ratio. */
 .board-stage {
-  padding: 1rem;
+  padding: 0.5rem 1rem 1rem;
   display: flex;
   justify-content: center;
+  align-items: center;
+  flex: 1 1 0;
+  min-height: 0;
 }
 .board-wrapper {
+  /* JS sizes this to fit the stage rectangle (see setupResponsiveBoard
+     in main.js). The width/aspect-ratio fallback below gives a visible
+     board on the first paint, before JS runs (or if it fails to load). */
   width: 100%;
-  max-width: 1200px;
-  /* The board is 1524x1125 — preserve that aspect ratio */
   aspect-ratio: 1524 / 1125;
+  max-width: 100%;
+  max-height: 100%;
   position: relative;
 }
 .board {
@@ -131,7 +159,8 @@ body.view-mode .hint { display: none; }
   background-color: #e8e2d5;
   background-repeat: no-repeat;
   background-position: center;
-  border: 2px solid #1a2332;
+  /* The mission PNG already includes its own dark frame and dotted trim,
+     so we don't draw an outer border that would compete with it. */
   overflow: hidden;
   /* Disable browser drag of background image */
   -webkit-user-drag: none;
@@ -145,6 +174,7 @@ body.view-mode .hint { display: none; }
   transform-origin: center;
   user-select: none;
   -webkit-user-drag: none;
+  touch-action: none;
 }
 .piece img {
   width: 100%;
@@ -160,6 +190,28 @@ body.view-mode .hint { display: none; }
 }
 .piece.view-only { cursor: default; }
 
+/* Letter label badge centered on a piece. Counter-rotated in JS to stay
+   upright when the piece is rotated. Hidden until a label is set. */
+.piece-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+  background: #f4ede0;
+  color: #1a1a1a;
+  border: 1.5px solid #1a1a1a;
+  border-radius: 3px;
+  font-weight: 800;
+  font-size: clamp(10px, 1.2vw, 18px);
+  line-height: 1;
+  padding: 2px 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  display: none;
+}
+.piece-label.has-label { display: block; }
+
 /* Toolbar */
 .toolbar {
   display: grid;
@@ -167,6 +219,7 @@ body.view-mode .hint { display: none; }
   gap: 0.4rem;
   justify-content: center;
   padding: 0.75rem;
+  flex-shrink: 0;
 }
 .tbtn {
   width: 44px;
@@ -196,7 +249,33 @@ body.view-mode .hint { display: none; }
   text-align: center;
   font-size: 0.8rem;
   color: #777;
-  padding: 0.5rem 1rem 1.5rem;
+  padding: 0.5rem 1rem 0.5rem;
+  flex-shrink: 0;
+}
+
+/* "All state is in the URL" explainer above the disclaimer. */
+.share-note {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #4a463e;
+  padding: 0.5rem 1rem 0;
+  margin: 0;
+  flex-shrink: 0;
+  line-height: 1.5;
+  max-width: 60rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Unofficial-use disclaimer at the bottom of the page. */
+.disclaimer {
+  text-align: center;
+  font-size: 0.72rem;
+  color: #8a8478;
+  padding: 0.5rem 1rem 1rem;
+  margin: 0;
+  flex-shrink: 0;
+  line-height: 1.45;
 }
 .hint kbd {
   background: #fff;

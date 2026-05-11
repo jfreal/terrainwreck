@@ -37,6 +37,15 @@ export function renderViewer(state) {
       el.style.transform = `rotate(${piece.r || 0}deg)`;
     });
     el.appendChild(img);
+    const label = document.createElement("span");
+    label.className = "piece-label";
+    if (piece.l) {
+      label.textContent = String(piece.l).slice(0, 1).toUpperCase();
+      label.classList.add("has-label");
+    }
+    // Counter-rotate so the letter stays upright regardless of piece rotation.
+    label.style.transform = `translate(-50%, -50%) rotate(${-(piece.r || 0)}deg)`;
+    el.appendChild(label);
     board.appendChild(el);
   }
 }
