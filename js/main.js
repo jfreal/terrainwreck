@@ -14,6 +14,7 @@ function bootstrap() {
   if (isViewMode()) {
     document.body.classList.add("view-mode");
     renderViewer(state);
+    updateMissionTitle(state.m);
     setupForkButton(state);
     setupDownloadButton(() => state);
     setupResponsiveBoard();
@@ -22,9 +23,11 @@ function bootstrap() {
 
   populateSelectors(state);
   const editor = initEditor(state);
+  updateMissionTitle(state.m);
 
   document.getElementById("mission-select").addEventListener("change", e => {
     setMission(e.target.value);
+    updateMissionTitle(e.target.value);
   });
   document.getElementById("terrain-select").addEventListener("change", e => {
     setTerrainSet(e.target.value);
@@ -154,6 +157,13 @@ function filenameFor(state) {
   const terrain = (state?.t || "set").replace(/[^a-z0-9-]/gi, "");
   const stamp = new Date().toISOString().slice(0, 16).replace(/[:T-]/g, "");
   return `killteam-${mission}-${terrain}-${stamp}.png`;
+}
+
+function updateMissionTitle(missionId) {
+  const el = document.getElementById("mission-title-name");
+  if (!el) return;
+  const m = MISSIONS.find(x => x.id === missionId);
+  el.textContent = m ? m.label : "";
 }
 
 function setupForkButton(state) {
