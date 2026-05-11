@@ -1,7 +1,7 @@
 // Entry point. Decides between view mode and edit mode, wires up the
 // mission/terrain selectors and the share/fork buttons.
 
-import { MISSIONS, TERRAIN_SETS, BOARD_WIDTH, BOARD_HEIGHT } from "./catalog.js";
+import { MISSIONS, TERRAIN_SETS, BOARD_WIDTH, BOARD_HEIGHT, findMission } from "./catalog.js";
 import { readStateFromUrl, isViewMode, viewLink, editLink, copyToClipboard, writeStateToUrl } from "./share.js";
 import { initEditor, setMission, setTerrainSet } from "./editor.js";
 import { renderViewer } from "./viewer.js";
@@ -22,7 +22,14 @@ function bootstrap() {
   }
 
   populateSelectors(state);
-  const editor = initEditor(state);
+  const editor = initEditor(state, {
+    // Keep the title and selector dropdowns in sync after editor-internal
+    // state reloads (undo / redo / future paste-state hooks).
+    onStateLoad: (s) => {
+      updateMissionTitle(s.m);
+      syncSelectors(s);
+    },
+  });
   updateMissionTitle(state.m);
 
   document.getElementById("mission-select").addEventListener("change", e => {
@@ -162,8 +169,18 @@ function filenameFor(state) {
 function updateMissionTitle(missionId) {
   const el = document.getElementById("mission-title-name");
   if (!el) return;
-  const m = MISSIONS.find(x => x.id === missionId);
+  // findMission falls back to a default for unknown ids, matching what the
+  // board background actually renders — keeps the title in sync with what
+  // the user sees instead of going blank.
+  const m = findMission(missionId);
   el.textContent = m ? m.label : "";
+}
+
+function syncSelectors(state) {
+  const ms = document.getElementById("mission-select");
+  if (ms && ms.value !== state.m) ms.value = state.m;
+  const ts = document.getElementById("terrain-select");
+  if (ts && ts.value !== state.t) ts.value = state.t;
 }
 
 function setupForkButton(state) {
@@ -201,7 +218,11 @@ function setupResponsiveBoard() {
   window.addEventListener("resize", fit);
   // Catches palette-row height changes (terrain set switch) and other
   // surrounding-layout shifts that change the stage's flex-distributed height.
-  new ResizeObserver(fit).observe(stage);
+  // Feature-detect: older / non-DOM environments may not have ResizeObserver,
+  // in which case the window resize listener alone is the fallback.
+  if (typeof ResizeObserver !== "undefined") {
+    new ResizeObserver(fit).observe(stage);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", bootstrap);

@@ -30,6 +30,7 @@ let palette = null;        // #palette DOM node
 let pieceEls = new Map();  // pieceId -> DOM element
 let selectedId = null;
 let snapEnabled = true;
+let onStateLoadCb = null;  // notified after undo/redo replaces state
 const undoStack = [];
 const redoStack = [];
 let nextLocalId = 1;
@@ -38,6 +39,7 @@ let nextLocalId = 1;
 
 export function initEditor(initialState, opts = {}) {
   state = normalizeState(initialState);
+  onStateLoadCb = typeof opts.onStateLoad === "function" ? opts.onStateLoad : null;
   board = document.getElementById("board");
   palette = document.getElementById("palette");
   setupBoard();
@@ -487,4 +489,6 @@ function loadFromSnapshot(json) {
   pieceEls.clear();
   renderAll();
   writeStateToUrl(publicState());
+  // Let the host (main.js) refresh title + selectors against the new state.
+  if (onStateLoadCb) onStateLoadCb(state);
 }
