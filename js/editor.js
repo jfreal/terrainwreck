@@ -83,6 +83,7 @@ function normPiece(p) {
     x: Number.isFinite(p.x) ? p.x : 0,
     y: Number.isFinite(p.y) ? p.y : 0,
     r: Number.isFinite(p.r) ? p.r : 0,
+    l: typeof p.l === "string" ? p.l.slice(0, 1).toUpperCase() : "",
   };
 }
 
@@ -97,7 +98,12 @@ function publicState() {
     v: 1,
     m: state.m,
     t: state.t,
-    p: state.p.map(p => ({ s: p.s, x: Math.round(p.x), y: Math.round(p.y), r: ((p.r % 360) + 360) % 360 })),
+    p: state.p.map(p => {
+      const out = { s: p.s, x: Math.round(p.x), y: Math.round(p.y), r: ((p.r % 360) + 360) % 360 };
+      // Only persist the label when set, to keep empty-label URLs short.
+      if (p.l) out.l = p.l;
+      return out;
+    }),
   };
 }
 
@@ -169,6 +175,9 @@ function createPieceElement(piece) {
     updatePieceElement(el, getPiece(piece.id));
   });
   el.appendChild(img);
+  const label = document.createElement("span");
+  label.className = "piece-label";
+  el.appendChild(label);
   el.addEventListener("pointerdown", onPiecePointerDown);
   return el;
 }
@@ -186,6 +195,13 @@ function updatePieceElement(el, piece) {
   el.style.height = `${(natH / BOARD_HEIGHT) * 100}%`;
   el.style.transform = `rotate(${piece.r}deg)`;
   el.classList.toggle("selected", piece.id === selectedId);
+  const label = el.querySelector(".piece-label");
+  if (label) {
+    label.textContent = piece.l || "";
+    label.classList.toggle("has-label", !!piece.l);
+    // Counter-rotate so the letter stays upright regardless of piece rotation.
+    label.style.transform = `translate(-50%, -50%) rotate(${-piece.r}deg)`;
+  }
 }
 
 // ---- Helpers: lookup, snap ----
@@ -310,6 +326,13 @@ function onPiecePointerDown(ev) {
 
 function setupKeyboard() {
   window.addEventListener("keydown", ev => {
+    // Ignore keystrokes typed into form fields (e.g. the mission/terrain
+    // selectors) so they don't double-fire as piece commands.
+    const t = ev.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA" || t.isContentEditable)) {
+      return;
+    }
+
     // Undo / redo
     if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "z") {
       ev.preventDefault();
@@ -342,7 +365,14 @@ function setupKeyboard() {
       case "Escape":
         select(null); break;
       default:
-        consumed = false;
+        // A–Z sets the piece's label; 0 clears it.
+        if (!ev.ctrlKey && !ev.metaKey && !ev.altKey && /^[a-zA-Z]$/.test(ev.key)) {
+          piece.l = ev.key.toUpperCase();
+        } else if (ev.key === "0") {
+          piece.l = "";
+        } else {
+          consumed = false;
+        }
     }
     if (consumed) {
       ev.preventDefault();
